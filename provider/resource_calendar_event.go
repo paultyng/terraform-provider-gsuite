@@ -1,10 +1,12 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/pkg/errors"
@@ -23,6 +25,10 @@ func resourceCalendarEvent() *schema.Resource {
 		Read:   resourceCalendarEventRead,
 		Update: resourceCalendarEventUpdate,
 		Delete: resourceCalendarEventDelete,
+
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(30 * time.Second),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"summary": &schema.Schema{
@@ -109,6 +115,7 @@ func resourceCalendarEvent() *schema.Resource {
 			"reminder": &schema.Schema{
 				Type:     schema.TypeSet,
 				Optional: true,
+				Set:      reminderSetFunc(),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"method": &schema.Schema{
@@ -118,16 +125,15 @@ func resourceCalendarEvent() *schema.Resource {
 						},
 
 						"before": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: durationDiffSuppressFunc(),
 						},
 					},
 				},
 			},
 
-			//
 			// Computed values
-			//
 			"event_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -146,18 +152,54 @@ func resourceCalendarEvent() *schema.Resource {
 	}
 }
 
+func reminderSetFunc() schema.SchemaSetFunc {
+	return func(v interface{}) int {
+		m := v.(map[string]interface{})
+		method := m["method"].(string)
+		before := m["before"].(string)
+
+		if duration, err := time.ParseDuration(before); err == nil {
+			before = fmt.Sprintf("%d", duration)
+		}
+
+		hc := hashcode.String(fmt.Sprintf("%s_%s", method, before))
+
+		return hc
+	}
+}
+
+func durationDiffSuppressFunc() schema.SchemaDiffSuppressFunc {
+	return func(k string, old string, new string, d *schema.ResourceData) bool {
+		od, err := time.ParseDuration(old)
+		if err != nil {
+			log.Printf("[WARN] error parsing duration %s, %v", old, err)
+			return false
+		}
+
+		nd, err := time.ParseDuration(new)
+		if err != nil {
+			log.Printf("[WARN] error parsing duration %s, %v", new, err)
+			return false
+		}
+
+		return od == nd
+	}
+}
+
 // resourceCalendarEventCreate creates a new event via the API.
 func resourceCalendarEventCreate(d *schema.ResourceData, meta interface{}) error {
-	config := meta.(*Config)
+	config := meta.(*config)
+	ctx := config.StopContext
 
 	event, err := resourceCalendarEventBuild(d, meta)
 	if err != nil {
 		return errors.Wrap(err, "failed to build event")
 	}
 
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutCreate))
 	defer cancel()
-	eventAPI, err := config.calendar.Events.
+
+	eventAPI, err := config.Calendar.Events.
 		Insert("primary", event).
 		SendNotifications(d.Get("send_notifications").(bool)).
 		MaxAttendees(25).
@@ -174,11 +216,13 @@ func resourceCalendarEventCreate(d *schema.ResourceData, meta interface{}) error
 
 // resourceCalendarEventRead reads information about the event from the API.
 func resourceCalendarEventRead(d *schema.ResourceData, meta interface{}) error {
-	config := meta.(*Config)
+	config := meta.(*config)
+	ctx := config.StopContext
 
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutRead))
 	defer cancel()
-	event, err := config.calendar.Events.
+
+	event, err := config.Calendar.Events.
 		Get("primary", d.Id()).
 		Context(ctx).
 		Do()
@@ -220,16 +264,18 @@ func resourceCalendarEventRead(d *schema.ResourceData, meta interface{}) error {
 
 // resourceCalendarEventUpdate updates an event via the API.
 func resourceCalendarEventUpdate(d *schema.ResourceData, meta interface{}) error {
-	config := meta.(*Config)
+	config := meta.(*config)
+	ctx := config.StopContext
 
 	event, err := resourceCalendarEventBuild(d, meta)
 	if err != nil {
 		return errors.Wrap(err, "failed to build event")
 	}
 
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
-	eventAPI, err := config.calendar.Events.
+
+	eventAPI, err := config.Calendar.Events.
 		Update("primary", d.Id(), event).
 		SendNotifications(d.Get("send_notifications").(bool)).
 		MaxAttendees(25).
@@ -246,14 +292,16 @@ func resourceCalendarEventUpdate(d *schema.ResourceData, meta interface{}) error
 
 // resourceCalendarEventDelete deletes an event via the API.
 func resourceCalendarEventDelete(d *schema.ResourceData, meta interface{}) error {
-	config := meta.(*Config)
+	config := meta.(*config)
+	ctx := config.StopContext
 
 	id := d.Id()
 	sendNotifications := d.Get("send_notifications").(bool)
 
-	ctx, cancel := contextWithTimeout()
+	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutDelete))
 	defer cancel()
-	err := config.calendar.Events.
+
+	err := config.Calendar.Events.
 		Delete("primary", id).
 		SendNotifications(sendNotifications).
 		Context(ctx).

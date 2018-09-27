@@ -3,5 +3,3 @@ terraform-provider-*
 terraform.tfstate*
 *.log
 credentials.json
-
-pkg/
