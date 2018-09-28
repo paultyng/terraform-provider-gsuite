@@ -9,15 +9,14 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
-	directory "google.golang.org/api/admin/directory/v1"
 	calendar "google.golang.org/api/calendar/v3"
 	sheets "google.golang.org/api/sheets/v4"
 )
 
 var defaultScopes = []string{
 	calendar.CalendarScope,
-	directory.AdminDirectoryGroupScope,
-	directory.AdminDirectoryUserScope,
+	// directory.AdminDirectoryGroupScope,
+	// directory.AdminDirectoryUserScope,
 	sheets.SpreadsheetsReadonlyScope,
 }
 
