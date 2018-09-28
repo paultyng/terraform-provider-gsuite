@@ -43,9 +43,9 @@ func New() *schema.Provider {
 				Optional: true,
 			},
 		},
-		// DatasourcesMap: map[string]*schema.Resource{
-		// 	"gsuite_sheets_"
-		// },
+		DataSourcesMap: map[string]*schema.Resource{
+			"gsuite_sheets_spreadsheet_values": dataSourceSheetsSpreadsheetValues(),
+		},
 		ResourcesMap: map[string]*schema.Resource{
 			"gsuite_calendar_event": resourceCalendarEvent(),
 
