@@ -7,23 +7,23 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccCalendarEvent_basic(t *testing.T) {
+func TestAccResourceCalendarEvent_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		// TODO: CheckDestroy:
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCalendarEvent("60m"),
+				Config: testAccResourceCalendarEvent("60m"),
 				// TODO: Check:
 			},
 			{
-				Config:   testAccCalendarEvent("1h"),
+				Config:   testAccResourceCalendarEvent("1h"),
 				PlanOnly: true,
 				// TODO: Check:
 			},
 			{
-				Config:   testAccCalendarEvent("60m"),
+				Config:   testAccResourceCalendarEvent("60m"),
 				PlanOnly: true,
 				// TODO: Check:
 			},
@@ -31,21 +31,21 @@ func TestAccCalendarEvent_basic(t *testing.T) {
 	})
 }
 
-func TestAccCalendarEvent_acls(t *testing.T) {
+func TestAccResourceCalendarEvent_acls(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		// TODO: CheckDestroy:
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCalendarEvent_acls(),
+				Config: testAccResourceCalendarEvent_acls(),
 				// TODO: Check:
 			},
 		},
 	})
 }
 
-func testAccCalendarEvent(reminder string) string {
+func testAccResourceCalendarEvent(reminder string) string {
 	return fmt.Sprintf(`
 resource "gsuite_calendar_event" "demo" {
 	summary     = "Terraform Test Event"
@@ -77,7 +77,7 @@ resource "gsuite_calendar_event" "demo" {
 `, reminder)
 }
 
-func testAccCalendarEvent_acls() string {
+func testAccResourceCalendarEvent_acls() string {
 	return `
 resource "gsuite_calendar_event" "demo" {
 	summary     = "My Open Event"
