@@ -5,7 +5,7 @@ This is a [Terraform](https://github.com/hashicorp/terraform) provider for manag
 
 ## Installation
 
-1. Download the latest compiled binary from [GitHub releases](/releases).
+1. Download the latest compiled binary from [GitHub releases](https://github.com/paultyng/terraform-provider-gsuite/releases).
 
 1. Unzip/untar the archive.
 
