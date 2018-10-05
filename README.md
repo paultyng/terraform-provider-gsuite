@@ -1,6 +1,6 @@
 # Terraform GSuite Provider
 
-This is a [Terraform][terraform] provider for managing GSuite. It is based on [Seth Vargo's Google Calendar provider](https://github.com/sethvargo/terraform-provider-googlecalendar).
+This is a [Terraform](https://github.com/hashicorp/terraform) provider for managing GSuite. It is based on [Seth Vargo's Google Calendar provider](https://github.com/sethvargo/terraform-provider-googlecalendar).
 
 
 ## Installation
