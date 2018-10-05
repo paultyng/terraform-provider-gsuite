@@ -13,7 +13,7 @@ This is a [Terraform](https://github.com/hashicorp/terraform) provider for manag
 
     ```sh
     $ mkdir -p $HOME/.terraform.d/plugins
-    $ mv terraform-provider-googlecalendar $HOME/.terraform.d/plugins/terraform-provider-googlecalendar
+    $ mv terraform-provider-gsuite $HOME/.terraform.d/plugins/terraform-provider-gsuite
     ```
 
 1. Create your Terraform configurations as normal, and run `terraform init`:
