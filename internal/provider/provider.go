@@ -7,14 +7,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
-	calendar "google.golang.org/api/calendar/v3"
 	sheets "google.golang.org/api/sheets/v4"
 )
 
 var defaultScopes = []string{
-	calendar.CalendarScope,
+	// calendar.CalendarScope,
 	// directory.AdminDirectoryGroupScope,
 	// directory.AdminDirectoryUserScope,
 	sheets.SpreadsheetsReadonlyScope,
@@ -47,7 +46,8 @@ func New() *schema.Provider {
 			"gsuite_sheets_spreadsheet_values": dataSourceSheetsSpreadsheetValues(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"gsuite_calendar_event": resourceCalendarEvent(),
+			// TODO: from Seth's provider?
+			// "gsuite_calendar_event": resourceCalendarEvent(),
 
 			// TODO: look at combining with these from DeviaVir/terraform-provider-gsuite
 			// "gsuite_directory_group":         resourceGroup(),
@@ -79,7 +79,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 			Credentials: d.Get("credentials").(string),
 			Scopes:      scopes,
 
-			StopContext: p.StopContext(),
+			//userAgent: p.UserAgent()
 		}
 
 		if err := config.loadAndValidate(ctx); err != nil {

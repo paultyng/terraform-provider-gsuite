@@ -8,14 +8,14 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/logging"
-	"github.com/hashicorp/terraform/helper/pathorcontents"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform/version"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"
-	calendar "google.golang.org/api/calendar/v3"
 	sheets "google.golang.org/api/sheets/v4"
+
+	"github.com/paultyng/terraform-provider-gsuite/internal/pathorcontents"
 )
 
 // Config is the structure used to instantiate the Google Calendar provider.
@@ -23,11 +23,9 @@ type config struct {
 	Credentials string
 	Scopes      []string
 
-	Calendar *calendar.Service
-	Sheets   *sheets.Service
+	Sheets *sheets.Service
+	//Calendar *calendar.Service
 	//Directory *directory.Service
-
-	StopContext context.Context
 
 	client      *http.Client
 	userAgent   string
@@ -96,14 +94,6 @@ func (c *config) loadAndValidate(ctx context.Context) error {
 	c.client = client
 	c.userAgent = userAgent
 
-	// Create the calendar service.
-	calendarSvc, err := calendar.New(client)
-	if err != nil {
-		return nil
-	}
-	calendarSvc.UserAgent = userAgent
-	c.Calendar = calendarSvc
-
 	// Create the sheets service
 	sheetsSvc, err := sheets.New(client)
 	if err != nil {
@@ -111,6 +101,14 @@ func (c *config) loadAndValidate(ctx context.Context) error {
 	}
 	sheetsSvc.UserAgent = userAgent
 	c.Sheets = sheetsSvc
+
+	// // Create the calendar service.
+	// calendarSvc, err := calendar.New(client)
+	// if err != nil {
+	// 	return nil
+	// }
+	// calendarSvc.UserAgent = userAgent
+	// c.Calendar = calendarSvc
 
 	// // Create the directory service.
 	// directorySvc, err := directory.New(client)

@@ -6,12 +6,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var testAccProviders map[string]terraform.ResourceProvider
-var testAccProvider *schema.Provider
+var providerFactories = map[string]func() (*schema.Provider, error){
+	"gsuite": func() (*schema.Provider, error) {
+		return New(), nil
+	},
+}
 
 var credsEnvVars = []string{
 	"GOOGLE_CREDENTIALS",
@@ -20,21 +22,10 @@ var credsEnvVars = []string{
 	"GOOGLE_USE_DEFAULT_CREDENTIALS",
 }
 
-func init() {
-	testAccProvider = New()
-	testAccProviders = map[string]terraform.ResourceProvider{
-		"gsuite": testAccProvider,
-	}
-}
-
 func TestProvider(t *testing.T) {
 	if err := New().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
-}
-
-func TestProvider_impl(t *testing.T) {
-	var _ terraform.ResourceProvider = New()
 }
 
 func testAccPreCheck(t *testing.T) {

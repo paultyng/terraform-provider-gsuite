@@ -1,17 +1,19 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func dataSourceSheetsSpreadsheetValues() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceSheetsSpreadsheetValuesRead,
+		ReadContext: dataSourceSheetsSpreadsheetValuesRead,
 
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(30 * time.Second),
@@ -53,9 +55,8 @@ func dataSourceSheetsSpreadsheetValues() *schema.Resource {
 	}
 }
 
-func dataSourceSheetsSpreadsheetValuesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceSheetsSpreadsheetValuesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*config)
-	ctx := c.StopContext
 
 	spreadsheetID := d.Get("spreadsheet_id").(string)
 	readRange := d.Get("range").(string)
@@ -69,7 +70,7 @@ func dataSourceSheetsSpreadsheetValuesRead(d *schema.ResourceData, meta interfac
 
 	resp, err := req.Do()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s", spreadsheetID, readRange))
