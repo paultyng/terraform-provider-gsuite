@@ -26,7 +26,7 @@ func New() *schema.Provider {
 	p = &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			// this comes from the google provider, 0790c96cac61142042b6cc9033c74bb4cd1e562e
-			"credentials": &schema.Schema{
+			"credentials": {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
@@ -36,7 +36,7 @@ func New() *schema.Provider {
 				}, nil),
 				ValidateFunc: validateCredentials,
 			},
-			"scopes": &schema.Schema{
+			"scopes": {
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
