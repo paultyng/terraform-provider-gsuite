@@ -64,5 +64,6 @@ jobs:
       env:
         TF_ACC: "1"
         TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       run: |
         go test -v -cover ./internal/provider/
