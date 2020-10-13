@@ -33,8 +33,8 @@ func TestAccDataSourceSheetsSpreadsheetValues_basic(t *testing.T) {
 func testAccDataSourceSheetsSpreadsheetValues(spreadsheetID, readRange string) string {
 	return fmt.Sprintf(`
 data "gsuite_sheets_spreadsheet_values" "test" {
-	"spreadsheet_id" = "%s"
-	"range" = "%s"
+	spreadsheet_id = "%s"
+	range = "%s"
 }
 
 output "A1" {
