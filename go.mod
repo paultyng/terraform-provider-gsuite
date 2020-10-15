@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/hashicorp/terraform v0.11.9-0.20180919163851-470ab3869fd7
+	github.com/hashicorp/terraform-plugin-docs v0.2.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.0.3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.8.1
