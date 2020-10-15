@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -76,13 +75,29 @@ func dataSourceSheetsSpreadsheetValuesRead(ctx context.Context, d *schema.Resour
 	d.SetId(fmt.Sprintf("%s:%s", spreadsheetID, readRange))
 
 	if len(resp.Values) == 0 || len(resp.Values[0]) == 0 {
-		log.Printf("[WARN] no values found")
 		d.Set("values", [][]interface{}{})
-		return nil
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "No values found in spreadsheet range",
+			},
+		}
+	}
+
+	// normalize the sizing of the returned value
+	// TODO: maybe this should be calculated off the range?
+	maxCols := 0
+	for _, row := range resp.Values {
+		if cols := len(row); cols > maxCols {
+			maxCols = cols
+		}
 	}
 
 	values := []interface{}{}
 	for _, row := range resp.Values {
+		for len(row) < maxCols {
+			row = append(row, "")
+		}
 		values = append(values, row)
 	}
 	d.Set("values", values)
